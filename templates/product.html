@@ -1,0 +1,87 @@
+{% extends "master.html" %}
+{% block main_content %}
+
+<div id="productApp">
+  {% if error %}
+    <center><h3>{{ error }}</h3></center>
+  {% endif %}
+
+  <div class="container mt-4">
+    <div class="row">
+      <!-- Left sidebar filters -->
+      <div class="col-md-3">
+        <div class="shop-filter-wrap p-3 border rounded">
+          <h5>Search</h5>
+          <form class="mb-4">
+            <input type="search" class="form-control" placeholder="Search products..." v-model="searchQuery" />
+          </form>
+
+          <h5>Price</h5>
+          <div class="mb-4">
+            <input type="range" class="form-range" min="0" max="500" step="10" v-model="priceLimit" />
+            <small>Up to $[[ priceLimit ]]</small>
+          </div>
+
+          <h5>Size</h5>
+          <div class="mb-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="sizeSmall" />
+              <label class="form-check-label" for="sizeSmall">Small</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="sizeMedium" />
+              <label class="form-check-label" for="sizeMedium">Medium</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="sizeLarge" />
+              <label class="form-check-label" for="sizeLarge">Large</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product grid -->
+      <div class="col-md-9">
+        <div class="row">
+          <div
+            class="col-md-4 mb-4"
+            v-for="item in filteredProducts"
+            :key="item.id"
+          >
+            <div class="card h-100 shadow-sm">
+              <img
+                :src="item.image"
+                class="card-img-top"
+                :alt="item.title"
+                style="height: 200px; object-fit: contain; cursor: pointer;"
+                @click="showProductDetail(item)"
+              />
+
+              <div class="card-body d-flex flex-column">
+                <h6 class="card-title">
+                  [[ item.title.length > 50 ? item.title.slice(0, 50) + '...' : item.title ]]
+                </h6>
+                <p class="card-subtitle text-muted small">Category: [[ item.category ]]</p>
+                <p class="card-text text-truncate small">
+                  [[ item.description.length > 100 ? item.description.slice(0, 100) + '...' : item.description ]]
+                </p>
+                <div class="mt-auto d-flex justify-content-between align-items-center">
+                  <span class="text-primary font-weight-bold">$[[ item.price ]]</span>
+                  <button class="btn btn-sm btn-outline-primary">Add to Cart</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Detail Modal -->
+  {% include 'components/product_modal.html' %}
+
+</div>
+
+
+
+{% endblock %}

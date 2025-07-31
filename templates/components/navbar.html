@@ -1,0 +1,36 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="/">MyShop</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarModern"
+      aria-controls="navbarModern" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarModern">
+      <ul class="navbar-nav mr-auto mb-2 mb-lg-0">
+        <li class="nav-item active"><a class="nav-link" href="/home">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/products">Products</a></li>
+        <li class="nav-item"><a class="nav-link" href="/support">Support</a></li>
+      </ul>
+
+
+      <div class="d-flex align-items-center mt-3 mt-lg-0">
+
+        <form class="form-inline d-flex">
+          <input class="form-control mr-2" type="search" placeholder="Search..." />
+          <button class="btn btn-outline-light" type="submit">Search</button>
+        </form>
+
+
+       <a href="#" class="btn btn-outline-light position-relative ml-3" @click.prevent="showCartModal">
+  <i class="fas fa-shopping-cart"></i>
+  <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+    [[ cartCount ]]
+  </span>
+</a>
+
+
+      </div>
+    </div>
+  </div>
+</nav>

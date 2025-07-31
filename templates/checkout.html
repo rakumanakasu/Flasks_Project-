@@ -1,0 +1,87 @@
+{% extends "master.html" %}
+
+{% block main_content %}
+<form method="POST" action="/checkout" id="checkoutForm">
+  <div id="checkoutApp" class="container mt-4">
+    <h2 class="mb-4">Checkout</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div>
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="row">
+      <!-- Billing Form -->
+      <div class="col-md-8">
+        <div class="form-group mb-3">
+          <label for="name">Name</label>
+          <input name="name" type="text" class="form-control" id="name" placeholder="Your full name" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="phone">Phone <small>(Optional)</small></label>
+          <input name="phone" type="text" class="form-control" id="phone">
+        </div>
+        <div class="form-group mb-3">
+          <label for="email">Email</label>
+          <input name="email" type="email" class="form-control" id="email" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group mb-3">
+          <label for="address">Address</label>
+          <input name="address" type="text" class="form-control" id="address" placeholder="123 Main St" required>
+        </div>
+
+        <!-- Hidden input to hold cart JSON -->
+        <input type="hidden" name="cart_data" id="cart_data">
+
+        <button class="btn btn-primary btn-lg btn-block mt-3" type="submit">
+          Place Order
+        </button>
+      </div>
+
+      <!-- Cart Summary -->
+      <div class="col-md-4">
+        <h4 class="mb-3">Cart Summary</h4>
+        <ul class="list-group mb-3">
+          <li
+            v-for="(item, index) in cart_list"
+            :key="index"
+            class="list-group-item d-flex justify-content-between"
+          >
+            <div>
+              <small class="text-muted">[[ item.title ]]</small>
+            </div>
+            <span class="text-muted">
+              [[ item.qty ]] × $[[ item.price ]] = $[[ (item.qty * item.price).toFixed(2) ]]
+            </span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Subtotal</span>
+            <strong>$[[ subtotal ]]</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Shipping</span>
+            <strong>$[[ shipping ]]</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Tax (10%)</span>
+            <strong>$[[ tax ]]</strong>
+          </li>
+          <li class="list-group-item d-flex justify-content-between">
+            <span>Total (USD)</span>
+            <strong>$[[ total ]]</strong>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</form>
+
+
+
+
+{% endblock %}

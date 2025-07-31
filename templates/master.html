@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Home Page{% endblock %}</title>
+  {% include "style.html" %}
+</head>
+
+<body>
+  <div id="productApp">
+    {% block navbar_content %}
+      {% include "components/navbar.html" %}
+    {% endblock %}
+
+    {% block carousel_content %}
+      <div style="background-color: #f8f9fa;">
+        {% include "components/carousel.html" %}
+      </div>
+    {% endblock %}
+
+    <div class="container">
+      {% block main_content %}{% endblock %}
+    </div>
+
+    {% include "components/cart_modal.html" %}
+
+    {% block footer_content %}
+      {% include "components/footer.html" %}
+    {% endblock %}
+  </div>
+</body>
+
+{% include "script.html" %}
+<script>
+const { createApp, ref, computed, onMounted } = Vue;
+
+createApp({
+  delimiters: ['[[', ']]'],
+  setup() {
+    const cart_list = ref(JSON.parse(localStorage.getItem('cart') ?? '[]'));
+    const cartCount = computed(() =>
+      cart_list.value.reduce((total, item) => total + (item.qty || 1), 0)
+    );
+
+    const searchQuery = ref('');
+    const priceLimit = ref(500);
+    const selected_product = ref({});
+    const quantity = ref(1);
+
+    const products = ref({{ products|default([])|tojson|safe }});
+    const product = ref({{ product|default({})|tojson|safe }});
+
+    const subtotal = computed(() =>
+      cart_list.value.reduce((sum, item) => sum + item.price * item.qty, 0).toFixed(2)
+    );
+    const shipping = computed(() =>
+      cart_list.value.length > 0 ? 5.99 : 0
+    );
+    const tax = computed(() =>
+      (parseFloat(subtotal.value) * 0.1).toFixed(2)
+    );
+    const total = computed(() =>
+      (parseFloat(subtotal.value) + shipping.value + parseFloat(tax.value)).toFixed(2)
+    );
+
+    const filteredProducts = computed(() =>
+      products.value.filter(p =>
+        p.title.toLowerCase().includes(searchQuery.value.toLowerCase()) &&
+        p.price <= priceLimit.value
+      )
+    );
+
+    const addToCart = (item = product.value) => {
+      if (quantity.value < 1) {
+        alert('Quantity must be at least 1');
+        return;
+      }
+
+      const existing = cart_list.value.find(p => p.id === item.id);
+      if (existing) {
+        existing.qty += quantity.value;
+      } else {
+        cart_list.value.push({ ...item, qty: quantity.value });
+      }
+      localStorage.setItem('cart', JSON.stringify(cart_list.value));
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Added to Cart',
+        text: `${item.title} x${quantity.value} added.`,
+        timer: 1200,
+        showConfirmButton: false
+      });
+    };
+
+    const removeCartItem = (index) => {
+      Swal.fire({
+        title: 'Are you sure?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, remove it!',
+        cancelButtonText: 'Cancel',
+      }).then(result => {
+        if (result.isConfirmed) {
+          cart_list.value.splice(index, 1);
+          localStorage.setItem('cart', JSON.stringify(cart_list.value));
+        }
+      });
+    };
+
+    const increaseQty = (item) => {
+      if (item.qty < 10) {
+        item.qty++;
+        localStorage.setItem('cart', JSON.stringify(cart_list.value));
+      }
+    };
+
+    const decreaseQty = (item) => {
+      if (item.qty > 1) {
+        item.qty--;
+        localStorage.setItem('cart', JSON.stringify(cart_list.value));
+      }
+    };
+
+    const showProductDetail = (p) => {
+      selected_product.value = p;
+      $('#productModal').modal('show');
+    };
+
+    const isCartModalVisible = ref(false);
+    const showCartModal = () => {
+      isCartModalVisible.value = true;
+    };
+    const proceedToPurchase = () => {
+      isCartModalVisible.value = false;
+      window.location.href = "/cart";
+    };
+
+
+    const checkout = () => {
+      window.location.href = "/checkout";
+    };
+
+   onMounted(() => {
+  console.log("Cart loaded:", cart_list.value);
+
+  const form = document.getElementById('checkoutForm');
+  form.addEventListener('submit', () => {
+
+    document.getElementById('cart_data').value = JSON.stringify(cart_list.value);
+  });
+});
+
+    return {
+      cart_list,
+      cartCount,
+      products,
+      product,
+      selected_product,
+      searchQuery,
+      priceLimit,
+      filteredProducts,
+      quantity,
+      addToCart,
+      removeCartItem,
+      increaseQty,
+      decreaseQty,
+      showProductDetail,
+      subtotal,
+      shipping,
+      tax,
+      total,
+      isCartModalVisible,
+      showCartModal,
+      proceedToPurchase,
+      checkout
+    };
+  }
+}).mount('#productApp');
+</script>
+<script>
+// Check if cookie 'clear_cart=1' exists
+if (document.cookie.includes('clear_cart=1')) {
+  localStorage.removeItem('cart');
+  console.log("Cart cleared after successful order.");
+
+  // Delete the cookie so it doesn't trigger again
+  document.cookie = "clear_cart=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+}
+</script>
+
+</html>

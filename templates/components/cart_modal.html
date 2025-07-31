@@ -1,0 +1,35 @@
+
+
+<div :class="['cart-modal', isCartModalVisible ? 'show' : '']">
+  <div class="cart-modal-header">
+    <h5 style="margin: 0;">🛒 Your Cart ([[ cartCount ]])</h5>
+    <button class="close-btn" @click="isCartModalVisible = false">&times;</button>
+  </div>
+
+  <div class="cart-modal-body">
+    <div v-if="cart_list.length === 0">
+      <p>Your cart is empty.</p>
+    </div>
+
+    <div v-else>
+      <div v-for="(item, index) in cart_list" :key="item.id" class="cart-item">
+        <img :src="item.image || '/static/default.jpg'" alt="Product Image" />
+        <div class="cart-item-info">
+          <h6 style="margin: 0 0 0.25rem;">[[ item.title ]]</h6>
+          <p style="margin: 0; font-size: 0.9rem;">$[[ item.price ]]</p>
+          <div class="quantity-control mt-1">
+            <button @click="item.qty = Math.max(1, item.qty - 1); localStorage.setItem('cart', JSON.stringify(cart_list))">−</button>
+            <span>[[ item.qty ]]</span>
+            <button @click="item.qty++; localStorage.setItem('cart', JSON.stringify(cart_list))">+</button>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-danger" @click="removeCartItem(index)">🗑</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cart-modal-footer">
+    <p><strong>Total:</strong> $[[ totalPrice ]]</p>
+    <button class="proceed-btn" @click="proceedToPurchase">Proceed to Purchase</button>
+  </div>
+</div>

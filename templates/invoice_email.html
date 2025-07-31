@@ -1,0 +1,147 @@
+{#<!DOCTYPE html>#}
+{#<html>#}
+{#<head>#}
+{#  <style>#}
+{#    body { font-family: Arial, sans-serif; }#}
+{#    table { width: 100%; border-collapse: collapse; }#}
+{#    th, td { padding: 8px; border-bottom: 1px solid #ddd; }#}
+{#    th { background-color: #f8f8f8; }#}
+{#  </style>#}
+{#</head>#}
+{#<body>#}
+{#  <h2>Invoice for your Order</h2>#}
+{#  <p>Hi {{ name }},</p>#}
+{#  <p>Thank you for your order! Here are the details:</p>#}
+{##}
+{#  <h3>Shipping Address</h3>#}
+{#  <p>{{ address }}<br>#}
+{#     Phone: {{ phone }}<br>#}
+{#     Email: {{ email }}</p>#}
+{##}
+{#  <h3>Order Details</h3>#}
+{#  <table>#}
+{#    <thead>#}
+{#      <tr>#}
+{#        <th>Product</th><th>Quantity</th><th>Price</th><th>Subtotal</th>#}
+{#      </tr>#}
+{#    </thead>#}
+{#    <tbody>#}
+{#      {% for item in cart_list %}#}
+{#      <tr>#}
+{#        <td>{{ item.title }}</td>#}
+{#        <td>{{ item.qty }}</td>#}
+{#        <td>${{ item.price }}</td>#}
+{#        <td>${{ item.qty * item.price }}</td>#}
+{#      </tr>#}
+{#      {% endfor %}#}
+{#      <tr>#}
+{#        <td colspan="3" style="text-align:right;"><strong>Total:</strong></td>#}
+{#        <td><strong>${{ total }}</strong></td>#}
+{#      </tr>#}
+{#    </tbody>#}
+{#  </table>#}
+{#  <p>We will notify you once your order is shipped.</p>#}
+{#</body>#}
+{#</html>#}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #333;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+
+    .invoice-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .logo {
+      max-width: 150px;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background-color: #f4f4f4;
+      font-weight: bold;
+    }
+
+    .total-row td {
+      border-top: 2px solid #ccc;
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      color: #777;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-container">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Your Logo" class="logo">
+
+    <h2 style="margin-bottom: 5px;">Invoice</h2>
+    <p>Hi {{ name }},</p>
+    <p>Thank you for your order! Here are your details:</p>
+
+    <h4>Shipping Address</h4>
+    <p>
+      {{ address }}<br>
+      Phone: {{ phone }}<br>
+      Email: {{ email }}
+    </p>
+
+    <h4>Order Summary</h4>
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th style="text-align:center;">Qty</th>
+          <th style="text-align:right;">Price</th>
+          <th style="text-align:right;">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in cart_list %}
+        <tr>
+          <td>{{ item.title }}</td>
+          <td style="text-align:center;">{{ item.qty }}</td>
+          <td style="text-align:right;">${{ item.price }}</td>
+          <td style="text-align:right;">${{ "%.2f"|format(item.qty * item.price) }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="total-row">
+          <td colspan="3" style="text-align:right;">Total:</td>
+          <td style="text-align:right;">${{ "%.2f"|format(total) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="footer">We’ll notify you once your order has shipped. Thank you for shopping with us!</p>
+  </div>
+</body>
+</html>
