@@ -137,20 +137,71 @@ createApp({
       window.location.href = "/cart";
     };
 
-
     const checkout = () => {
       window.location.href = "/checkout";
     };
 
-   onMounted(() => {
-  console.log("Cart loaded:", cart_list.value);
+    const validateCheckout = () => {
+      const name = document.getElementById("name")?.value.trim();
+      const email = document.getElementById("email")?.value.trim();
+      const address = document.getElementById("address")?.value.trim();
+      const cart = cart_list.value;
 
-  const form = document.getElementById('checkoutForm');
-  form.addEventListener('submit', () => {
+      // Validate name minimum 4 characters
+      if (!name || name.length < 4) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Invalid Name',
+          text: 'Name must be at least 4 characters long.',
+        });
+        return;
+      }
 
-    document.getElementById('cart_data').value = JSON.stringify(cart_list.value);
-  });
-});
+      if (!email || !address) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Missing Information',
+          text: 'Please fill out all required fields (Email, Address).',
+        });
+        return;
+      }
+
+      if (cart.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Empty Cart',
+          text: 'Your cart is empty. Please add some products before checkout.',
+        });
+        return;
+      }
+
+      // Show loading popup while processing
+      Swal.fire({
+        title: 'Processing your order...',
+        html: 'Please wait while we send your invoice.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      setTimeout(() => {
+        document.getElementById("cart_data").value = JSON.stringify(cart);
+        document.getElementById("checkoutForm").submit();
+      }, 1500);
+    };
+
+    onMounted(() => {
+      console.log("Cart loaded:", cart_list.value);
+
+      const form = document.getElementById('checkoutForm');
+      if (form) {
+        form.addEventListener('submit', (e) => {
+          e.preventDefault(); // prevent default submit
+          validateCheckout();
+        });
+      }
+    });
 
     return {
       cart_list,
@@ -174,18 +225,21 @@ createApp({
       isCartModalVisible,
       showCartModal,
       proceedToPurchase,
-      checkout
+      checkout,
+      validateCheckout
     };
   }
 }).mount('#productApp');
 </script>
+
+
 <script>
-// Check if cookie 'clear_cart=1' exists
+
 if (document.cookie.includes('clear_cart=1')) {
   localStorage.removeItem('cart');
   console.log("Cart cleared after successful order.");
 
-  // Delete the cookie so it doesn't trigger again
+
   document.cookie = "clear_cart=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 </script>
