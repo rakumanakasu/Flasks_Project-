@@ -1,26 +1,30 @@
+import sqlite3
 from flask import Blueprint, render_template
-import requests
+from config import DB_PATH
 
-product_bp = Blueprint("product", __name__)
+product_bp = Blueprint('product', __name__)
 
-@product_bp.route('/product')
+# ----------------------------
+# Database connection
+# ----------------------------
+def get_products_from_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM products")
+    rows = cur.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+# ----------------------------
+# Routes
+# ----------------------------
+@product_bp.route('/products')
 def products():
     products = []
-    carousel_images = []
     error = ''
     try:
-        r = requests.get('https://fakestoreapi.com/products')
-        if r.status_code == 200:
-            products = r.json()
-            carousel_images = [product['image'] for product in products[:3]]
-        else:
-            error = f"API returned status code {r.status_code}"
+        products = get_products_from_db()
     except Exception as e:
         error = str(e)
-
-    return render_template(
-        'product.html',
-        products=products,
-        error=error,
-        carousel_images=carousel_images
-    )
+    return render_template('product.html', products=products, error=error)

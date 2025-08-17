@@ -1,29 +1,29 @@
-from flask import Flask, render_template
-from flask_mail import Mail
-from dotenv import load_dotenv
-import os
+import sys
+sys.path.append(r"D:\Dara\PythonAPI\exam")
+
+from flask import render_template, send_from_directory
+from config import app, mail, SHARED_PHOTO_FOLDER  # use the instances already created
 from route import blueprints
 
-app = Flask(__name__)
-load_dotenv()
-
-app.secret_key = os.getenv("SECRET_KEY")
-
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv("EMAIL_USER")
-app.config['MAIL_PASSWORD'] = os.getenv("EMAIL_PASS")
-app.config['MAIL_DEFAULT_SENDER'] = ('good day', app.config['MAIL_USERNAME'])
-
-mail = Mail(app)
-
+# ----------------------------
+# Blueprints registration
+# ----------------------------
 for bp in blueprints:
     app.register_blueprint(bp)
 
+# ----------------------------
+# Routes
+# ----------------------------
+@app.route('/photos/<filename>')
+def shared_photos(filename):
+    return send_from_directory(SHARED_PHOTO_FOLDER, filename)
+
 @app.route('/support')
-def about():
+def support():
     return render_template('support.html')
 
+# ----------------------------
+# Run
+# ----------------------------
 if __name__ == '__main__':
     app.run(debug=True)
