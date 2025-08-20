@@ -29,7 +29,7 @@ chat_id = os.getenv("CHAT_ID")
 # ----------------------------
 
 DB_PATH = r"D:\Dara\PythonAPI\exam\FlaskProject\site.db"
-SHARED_PHOTO_FOLDER = r"D:\Dara\PythonAPI\exam\shared_photos"
+SHARED_PHOTO_FOLDER = os.getenv("SHARED_PHOTO_FOLDER", "/mnt/volume/shared_photos")
 os.makedirs(SHARED_PHOTO_FOLDER, exist_ok=True)
 
 # ----------------------------
