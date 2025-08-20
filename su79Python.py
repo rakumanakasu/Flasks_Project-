@@ -10,11 +10,13 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
     price REAL NOT NULL,
     image TEXT,
-    category TEXT
+    category TEXT,
+    rating_rate REAL DEFAULT 0,   
+    rating_count INTEGER DEFAULT 0  
 )
 ''')
 
 conn.commit()
 conn.close()
 
-print("Table created!")
+print("Table updated with rating!")

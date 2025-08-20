@@ -17,7 +17,7 @@
         <span class="badge pro-cat">[[ item.category ]]</span>
 
         <img
-          :src="item.image"
+          :src="item.image ? '/photos/' + item.image : '/static/default.jpg'"
           :alt="item.title"
           style="cursor: pointer;"
           @click="showProductDetail(item)"
@@ -28,36 +28,35 @@
             [[ item.title.length > 30 ? item.title.slice(0, 20) + '...' : item.title ]]
           </h6>
 
-         <div class="product-rating d-flex align-items-center">
-  <template v-for="n in Math.floor(item.rating.rate)">
-    <svg class="star" viewBox="0 0 20 20" fill="#ffc107" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 1.5l2.95 6.12 6.75.98-4.88 4.75 1.15 6.7L10 16.77l-6 3.15 1.15-6.7-4.88-4.75 6.75-.98L10 1.5z"/>
-    </svg>
-  </template>
+          <div class="product-rating d-flex align-items-center">
+            <template v-for="n in Math.floor(item.rating_rate)">
+              <svg class="star" viewBox="0 0 20 20" fill="#ffc107" width="16" height="16">
+                <path d="M10 1.5l2.95 6.12 6.75.98-4.88 4.75 1.15 6.7L10 16.77l-6 3.15 1.15-6.7-4.88-4.75 6.75-.98L10 1.5z"/>
+              </svg>
+            </template>
 
-  <template v-if="item.rating.rate - Math.floor(item.rating.rate) >= 0.5">
-    <svg class="star" viewBox="0 0 20 20" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="half-grad" x1="0" y1="0" x2="100%" y2="0">
-          <stop offset="50%" stop-color="#ffc107"/>
-          <stop offset="50%" stop-color="#ccc"/>
-        </linearGradient>
-      </defs>
-      <path d="M10 1.5l2.95 6.12 6.75.98-4.88 4.75 1.15 6.7L10 16.77l-6 3.15 1.15-6.7-4.88-4.75 6.75-.98L10 1.5z" fill="url(#half-grad)"/>
-    </svg>
-  </template>
+            <template v-if="item.rating_rate - Math.floor(item.rating_rate) >= 0.5">
+              <svg class="star" viewBox="0 0 20 20" width="16" height="16">
+                <defs>
+                  <linearGradient id="half-grad" x1="0" y1="0" x2="100%" y2="0">
+                    <stop offset="50%" stop-color="#ffc107"/>
+                    <stop offset="50%" stop-color="#ccc"/>
+                  </linearGradient>
+                </defs>
+                <path d="M10 1.5l2.95 6.12 6.75.98-4.88 4.75 1.15 6.7L10 16.77l-6 3.15 1.15-6.7-4.88-4.75 6.75-.98L10 1.5z" fill="url(#half-grad)"/>
+              </svg>
+            </template>
 
-  <template v-for="n in (5 - Math.ceil(item.rating.rate))">
-    <svg class="star" viewBox="0 0 20 20" fill="#ccc" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 1.5l2.95 6.12 6.75.98-4.88 4.75 1.15 6.7L10 16.77l-6 3.15 1.15-6.7-4.88-4.75 6.75-.98L10 1.5z"/>
-    </svg>
-  </template>
+            <template v-for="n in (5 - Math.ceil(item.rating_rate))">
+              <svg class="star" viewBox="0 0 20 20" fill="#ccc" width="16" height="16">
+                <path d="M10 1.5l2.95 6.12 6.75.98-4.88 4.75 1.15 6.7L10 16.77l-6 3.15 1.15-6.7-4.88-4.75 6.75-.98L10 1.5z"/>
+              </svg>
+            </template>
 
-  <span class="rating-count text-muted small ms-1">
-    ([[ item.rating.count ]] reviews)
-  </span>
-</div>
-
+            <span class="rating-count text-muted small ms-1">
+              ([[ item.rating_count ]] reviews)
+            </span>
+          </div>
 
           <p class="card-text">
             [[ item.description.length > 100 ? item.description.slice(0, 80) + '...' : item.description ]]
@@ -75,12 +74,12 @@
             <span class="product-card-price text-danger">$[[ item.price ]]</span>
           </div>
 
-         <button
-  class="btn btn-sm btn-outline-success w-100 mt-2"
-  @click="addToCart(item)"
->
-  Add to Cart 🛒
-</button>
+          <button
+            class="btn btn-sm btn-outline-success w-100 mt-2"
+            @click="addToCart(item)"
+          >
+            Add to Cart 🛒
+          </button>
 
         </div>
       </div>
@@ -90,7 +89,5 @@
   <!-- Product Detail Modal -->
   {% include 'components/product_modal.html' %}
 </div>
-
-
 
 {% endblock %}
