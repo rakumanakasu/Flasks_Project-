@@ -14,5 +14,7 @@ venv/
 .env
 *.env
 
+site.db
+*.sqlite3
 
 *.log
