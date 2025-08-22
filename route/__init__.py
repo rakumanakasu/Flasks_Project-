@@ -5,6 +5,7 @@ from .product_detail import product_detail_bp
 from .products import product_bp
 from .checkout import checkout_bp
 
+
 blueprints = [
     home_bp,
     cart_bp,

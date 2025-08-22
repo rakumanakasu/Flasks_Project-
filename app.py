@@ -17,6 +17,9 @@ for bp in blueprints:
 @app.route('/photos/<filename>')
 def shared_photos(filename):
     return send_from_directory(SHARED_PHOTO_FOLDER, filename)
+@app.route('/test_home')
+def test_home():
+    return render_template('home.html', products=[], carousel_images=[], error='')
 
 @app.route('/support')
 def support():
