@@ -15,23 +15,14 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
+
       <div class="modal-body d-flex flex-column flex-md-row">
-{#        <img#}
-{#          :src="selected_product.image"#}
-{#          class="img-fluid mb-3 mb-md-0 mr-md-3"#}
-{#          alt="Product Image"#}
-{#          style="max-width: 300px;"#}
-{#        />#}
-
-    <img
-  :src="selected_product.image ? selected_product.image : '/static/default.jpg'"
-  class="img-fluid mb-3 mb-md-0 mr-md-3"
-  alt="Product Image"
-  style="max-width: 300px;"
-/>
-
-
-
+        <img
+          :src="selected_product.image ? selected_product.image : '/static/default.jpg'"
+          class="img-fluid mb-3 mb-md-0 mr-md-3"
+          alt="Product Image"
+          style="max-width: 300px;"
+        />
 
         <div>
           <p class="text-muted">Category: [[ selected_product.category ]]</p>
@@ -40,8 +31,29 @@
           <button class="btn btn-sm btn-outline-primary mt-2" @click="addToCart(selected_product)">
             Add to Cart
           </button>
+
+          <!-- Rating Section -->
+          <div class="mt-3">
+            <label>Rate this product:</label>
+            <div>
+              <span
+                v-for="n in 5"
+                :key="n"
+                @click="submitRating(selected_product.id, n)"
+                style="cursor:pointer; font-size: 1.4rem;"
+              >
+                <i :class="n <= (selected_product.userRating || 0) ? 'text-warning fas fa-star' : 'text-muted far fa-star'"></i>
+              </span>
+            </div>
+          </div>
+
+          <p class="mt-2">
+            ⭐ [[ selected_product.rating_rate?.toFixed(1) || 0 ]] ( [[ selected_product.rating_count || 0 ]] reviews )
+          </p>
+
         </div>
       </div>
     </div>
   </div>
 </div>
+

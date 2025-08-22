@@ -26,7 +26,7 @@ def products():
     # Ensure each product has a valid image URL
     for p in products:
         if not p.get('image') or p['image'].strip() == '':
-            p['image'] = '/static/default.jpg'  # fallback local image
+            p['image'] = '/static/default.jpg'
 
     # Prepare carousel images (first 3 products)
     carousel_images = [p['image'] for p in products[:3]]
