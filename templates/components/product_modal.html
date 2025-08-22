@@ -23,12 +23,13 @@
 {#          style="max-width: 300px;"#}
 {#        />#}
 
-      <img
-  :src="item.image"
+    <img
+  :src="selected_product.image ? selected_product.image : '/static/default.jpg'"
   class="img-fluid mb-3 mb-md-0 mr-md-3"
   alt="Product Image"
   style="max-width: 300px;"
 />
+
 
 
 

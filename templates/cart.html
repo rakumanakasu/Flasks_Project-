@@ -20,7 +20,7 @@
       >
         <div class="row g-0">
           <div class="col-md-3">
-          <img :src="item.image" class="img-fluid rounded-start" alt="Product Image" />
+          <img :src="item.image ? item.image : '/static/default.jpg'"  class="img-fluid rounded-start" alt="Product Image" />
 
           </div>
           <div class="col-md-9">

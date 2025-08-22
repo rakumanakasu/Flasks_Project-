@@ -71,28 +71,35 @@ createApp({
       )
     );
 
-    const addToCart = (item = product.value) => {
-      if (quantity.value < 1) {
-        alert('Quantity must be at least 1');
-        return;
-      }
+   const addToCart = (item = product.value) => {
+  if (quantity.value < 1) {
+    alert('Quantity must be at least 1');
+    return;
+  }
 
-      const existing = cart_list.value.find(p => p.id === item.id);
-      if (existing) {
-        existing.qty += quantity.value;
-      } else {
-        cart_list.value.push({ ...item, qty: quantity.value });
-      }
-      localStorage.setItem('cart', JSON.stringify(cart_list.value));
+  // Ensure the item has a valid image
+  if (!item.image || item.image.trim() === '') {
+    item.image = '/static/default.jpg'; // fallback image
+  }
 
-      Swal.fire({
-        icon: 'success',
-        title: 'Added to Cart',
-        text: `${item.title} x${quantity.value} added.`,
-        timer: 1200,
-        showConfirmButton: false
-      });
-    };
+  const existing = cart_list.value.find(p => p.id === item.id);
+  if (existing) {
+    existing.qty += quantity.value;
+  } else {
+    cart_list.value.push({ ...item, qty: quantity.value });
+  }
+
+  localStorage.setItem('cart', JSON.stringify(cart_list.value));
+
+  Swal.fire({
+    icon: 'success',
+    title: 'Added to Cart',
+    text: `${item.title} x${quantity.value} added.`,
+    timer: 1200,
+    showConfirmButton: false
+  });
+};
+
 
     const removeCartItem = (index) => {
       Swal.fire({

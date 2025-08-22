@@ -14,7 +14,7 @@
 
     <div v-else>
       <div v-for="(item, index) in cart_list" :key="item.id" class="cart-item">
-       <img :src="item.image ? '/photos/' + item.image : '/static/default.jpg'" alt="Product Image" />
+       <img :src="item.image ? item.image : '/static/default.jpg'" alt="Product Image" />
         <div class="cart-item-info">
           <h6 style="margin: 0 0 0.25rem;">[[ item.title ]]</h6>
           <p style="margin: 0; font-size: 0.9rem;">$[[ item.price ]]</p>
