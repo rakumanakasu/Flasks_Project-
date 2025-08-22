@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 import requests
-from helper import product_db
+
 
 home_bp = Blueprint("home", __name__)
 
