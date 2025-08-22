@@ -34,7 +34,8 @@ Requests (for API usage)
 Installation
 
 # Clone the repository
-git clone https://github.com/yourusername/Flasks_Project.git
+git clone https://github.com/rakumanakasu/Flasks_Project-.git
+
 cd Flasks_Project
 
 # Create virtual environment
