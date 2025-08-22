@@ -10,54 +10,89 @@ checkout_bp = Blueprint("checkout", __name__)
 @checkout_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     if request.method == 'POST':
-        name = request.form.get('name')
-        phone = request.form.get('phone')
-        email = request.form.get('email')
-        address = request.form.get('address')
-        cart_json = request.form.get('cart_data')
+        # Collect form data safely
+        name = request.form.get('name', '').strip()
+        phone = request.form.get('phone', '').strip()
+        email = request.form.get('email', '').strip()
+        address = request.form.get('address', '').strip()
+        cart_json = request.form.get('cart_data', '[]')
 
+        # Parse cart JSON safely
         try:
-            cart_list = json.loads(cart_json) if cart_json else []
-        except json.JSONDecodeError:
+            cart_list = json.loads(cart_json)
+            if not isinstance(cart_list, list):
+                cart_list = []
+        except Exception as e:
+            print("Cart JSON parse error:", e)
             cart_list = []
 
+        # Ensure each item has required fields and correct types
+        for item in cart_list:
+            item.setdefault('title', 'Unknown')
+            item.setdefault('qty', 1)
+            item.setdefault('price', 0)
+            item.setdefault('image', '/static/default.jpg')
+
+            # Convert qty and price to proper numeric types
+            try:
+                item['qty'] = int(item['qty'])
+            except (ValueError, TypeError):
+                item['qty'] = 1
+
+            try:
+                item['price'] = float(item['price'])
+            except (ValueError, TypeError):
+                item['price'] = 0.0
+
         # Calculate totals
-        subtotal = sum(item.get('qty', 0) * item.get('price', 0) for item in cart_list)
+        subtotal = sum(item['qty'] * item['price'] for item in cart_list)
         shipping = 5.99 if cart_list else 0
         tax = round(subtotal * 0.1, 2)
         total = round(subtotal + shipping + tax, 2)
 
-        logo_path = os.path.abspath("static/images/logo.png")
-        logo_base64 = get_logo_base64()
-
-        invoice_html = render_template('invoice_email.html',
-                                       name=name,
-                                       phone=phone,
-                                       email=email,
-                                       address=address,
-                                       cart_list=cart_list,
-                                       subtotal=subtotal,
-                                       shipping=shipping,
-                                       tax=tax,
-                                       total=total,
-                                       logo_path=logo_path,
-                                       logo_base64=logo_base64
-                                       )
-
-        msg = Message(subject='Your Order Invoice',
-                      recipients=[email],
-                      html=invoice_html)
+        # Generate invoice HTML
         try:
-            mail.send(msg)
+            logo_base64 = get_logo_base64() or ''
+        except Exception as e:
+            print("Logo base64 error:", e)
+            logo_base64 = ''
 
-            # Telegram message with breakdown
+        invoice_html = render_template(
+            'invoice_email.html',
+            name=name,
+            phone=phone,
+            email=email,
+            address=address,
+            cart_list=cart_list,
+            subtotal=subtotal,
+            shipping=shipping,
+            tax=tax,
+            total=total,
+            logo_base64=logo_base64
+        )
+
+        # Send email
+        try:
+            msg = Message(
+                subject=f"Your Order Invoice #{date.today().strftime('%Y%m%d')}",
+                recipients=[email],
+                html=invoice_html
+            )
+            mail.send(msg)
+        except Exception as e:
+            print("Mail send error:", e)
+            flash(f'Failed to send email: {str(e)}', 'danger')
+            return render_template('checkout.html')
+
+        # Send Telegram message
+        try:
             message_lines = [
                 f"<strong>🧾 Invoice #{date.today().strftime('%Y%m%d')}</strong>",
                 f"<code>👤 {name}</code>",
                 f"<code>📧 {email}</code>",
                 f"<code>📆 {date.today()}</code>",
                 f"<code>🏠 {address}</code>",
-                "<code>=======================</code>",
+                "<code>=======================</code>"
             ]
             for i, item in enumerate(cart_list, start=1):
                 subtotal_item = item['qty'] * item['price']
@@ -69,25 +104,30 @@ def checkout():
                 f"<code>Subtotal: ${subtotal:.2f}</code>",
                 f"<code>Shipping: ${shipping:.2f}</code>",
                 f"<code>Tax (10%): ${tax:.2f}</code>",
-                f"<code>💵 Total: ${total:.2f}</code>",
+                f"<code>💵 Total: ${total:.2f}</code>"
             ]
-
             telegram_message = "\n".join(message_lines)
+
             requests.post(
                 f"https://api.telegram.org/bot{bot_token}/sendMessage",
                 data={"chat_id": chat_id, "text": telegram_message, "parse_mode": "HTML"}
             )
+        except Exception as e:
+            print("Telegram send error:", e)
 
-            # PDF generation for Telegram
+        # Generate PDF and send to Telegram
+        try:
             pdf_buffer = generate_pdf_from_html(invoice_html)
             send_pdf_to_telegram(pdf_buffer, filename=f"invoice_{date.today()}.pdf")
-
-            flash('Order placed successfully! Invoice sent to your email and Telegram.', 'success')
-            response = redirect(url_for('checkout.checkout'))
-            response.set_cookie('clear_cart', '1', max_age=10)
-            return response
-
         except Exception as e:
-            flash(f'Failed to send invoice: {str(e)}', 'danger')
+            print("PDF/Telegram send error:", e)
 
+        flash('Order placed successfully! Invoice sent to your email and Telegram.', 'success')
+
+        # Clear cart cookie
+        response = redirect(url_for('checkout.checkout'))
+        response.set_cookie('clear_cart', '1', max_age=10)
+        return response
+
+    # GET request
     return render_template('checkout.html')
