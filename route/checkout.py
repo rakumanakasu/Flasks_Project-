@@ -10,14 +10,18 @@ checkout_bp = Blueprint("checkout", __name__)
 @checkout_bp.route('/checkout', methods=['GET', 'POST'])
 def checkout():
     if request.method == 'POST':
+        # -------------------------
         # Collect form data
+        # -------------------------
         name = request.form.get('name', '').strip()
         phone = request.form.get('phone', '').strip()
         email = request.form.get('email', '').strip()
         address = request.form.get('address', '').strip()
         cart_json = request.form.get('cart_data', '[]')
 
-        # Safely parse cart JSON
+        # -------------------------
+        # Parse cart JSON safely
+        # -------------------------
         try:
             cart_list = json.loads(cart_json)
             if not isinstance(cart_list, list):
@@ -26,20 +30,26 @@ def checkout():
             print("Cart JSON parse error:", e)
             cart_list = []
 
-        # Ensure cart items have required fields
+        # -------------------------
+        # Ensure items have proper fields
+        # -------------------------
         for item in cart_list:
-            item.setdefault('title', 'Unknown')
-            item.setdefault('qty', 1)
-            item.setdefault('price', 0)
-            item.setdefault('image', '/static/default.jpg')
+            item['title'] = str(item.get('title', 'Unknown'))
+            item['qty'] = float(item.get('qty', 1))
+            item['price'] = float(item.get('price', 0))
+            item['image'] = str(item.get('image', ''))
 
+        # -------------------------
         # Calculate totals
-        subtotal = sum(float(item['qty']) * float(item['price']) for item in cart_list)
+        # -------------------------
+        subtotal = sum(item['qty'] * item['price'] for item in cart_list)
         shipping = 5.99 if cart_list else 0
         tax = round(subtotal * 0.1, 2)
         total = round(subtotal + shipping + tax, 2)
 
+        # -------------------------
         # Generate invoice HTML
+        # -------------------------
         try:
             logo_base64 = get_logo_base64() or ''
         except Exception as e:
@@ -60,7 +70,9 @@ def checkout():
             logo_base64=logo_base64
         )
 
-        # Send email
+        # -------------------------
+        # Send Email
+        # -------------------------
         try:
             msg = Message(
                 subject=f"Your Order Invoice #{date.today().strftime('%Y%m%d')}",
@@ -73,7 +85,9 @@ def checkout():
             flash(f'Failed to send email: {str(e)}', 'danger')
             return render_template('checkout.html')
 
-        # Send Telegram message summary with product URLs
+        # -------------------------
+        # Send Telegram summary (text only, no URLs)
+        # -------------------------
         try:
             message_lines = [
                 f"<strong>🧾 Invoice #{date.today().strftime('%Y%m%d')}</strong>",
@@ -85,10 +99,9 @@ def checkout():
             ]
 
             for i, item in enumerate(cart_list, start=1):
-                subtotal_item = float(item['qty']) * float(item['price'])
-                image_url = item.get('image', '')
+                subtotal_item = item['qty'] * item['price']
                 message_lines.append(
-                    f"<code>{i}. {item['title']} x{item['qty']} = ${subtotal_item:.2f}</code>\n{image_url}"
+                    f"<code>{i}. {item['title']} x{int(item['qty'])} = ${subtotal_item:.2f}</code>"
                 )
 
             message_lines += [
@@ -107,12 +120,14 @@ def checkout():
         except Exception as e:
             print("Telegram summary error:", e)
 
-        # Send each product image as inline photo with caption
+        # -------------------------
+        # Send each product image as separate Telegram photo
+        # -------------------------
         try:
             for item in cart_list:
                 image_url = item.get('image', '')
                 if image_url:
-                    caption = f"{item['title']} x{item['qty']} - ${float(item['price']) * float(item['qty']):.2f}"
+                    caption = f"{item['title']} x{int(item['qty'])} - ${item['qty'] * item['price']:.2f}"
                     requests.post(
                         f"https://api.telegram.org/bot{bot_token}/sendPhoto",
                         data={
@@ -125,19 +140,24 @@ def checkout():
         except Exception as e:
             print("Telegram send photo error:", e)
 
+        # -------------------------
         # Generate PDF and send to Telegram
+        # -------------------------
         try:
             pdf_buffer = generate_pdf_from_html(invoice_html)
             send_pdf_to_telegram(pdf_buffer, filename=f"invoice_{date.today()}.pdf")
         except Exception as e:
             print("PDF/Telegram send error:", e)
 
+        # -------------------------
+        # Success flash & clear cart
+        # -------------------------
         flash('Order placed successfully! Invoice sent to your email and Telegram.', 'success')
-
-        # Clear cart cookie
         response = redirect(url_for('checkout.checkout'))
         response.set_cookie('clear_cart', '1', max_age=10)
         return response
 
+    # -------------------------
     # GET request
+    # -------------------------
     return render_template('checkout.html')
