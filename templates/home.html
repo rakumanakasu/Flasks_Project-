@@ -17,7 +17,7 @@
         <span class="badge pro-cat">[[ item.category ]]</span>
 
         <img
-          :src="item.image ? '/photos/' + item.image : '/static/default.jpg'"
+          :src="item.image"
           :alt="item.title"
           style="cursor: pointer;"
           @click="showProductDetail(item)"
