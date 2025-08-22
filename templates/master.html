@@ -55,7 +55,7 @@ createApp({
       cart_list.value.reduce((sum, item) => sum + item.price * item.qty, 0).toFixed(2)
     );
     const shipping = computed(() =>
-      cart_list.value.length > 0 ? 5.99 : 0
+      cart_list.value.length > 0 ? 2.69 : 0
     );
     const tax = computed(() =>
       (parseFloat(subtotal.value) * 0.1).toFixed(2)
