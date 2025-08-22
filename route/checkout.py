@@ -73,7 +73,7 @@ def checkout():
             flash(f'Failed to send email: {str(e)}', 'danger')
             return render_template('checkout.html')
 
-        # Send Telegram summary message
+        # Send Telegram message summary with product URLs
         try:
             message_lines = [
                 f"<strong>🧾 Invoice #{date.today().strftime('%Y%m%d')}</strong>",
@@ -83,11 +83,14 @@ def checkout():
                 f"<code>🏠 {address}</code>",
                 "<code>=======================</code>"
             ]
+
             for i, item in enumerate(cart_list, start=1):
                 subtotal_item = float(item['qty']) * float(item['price'])
+                image_url = item.get('image', '')
                 message_lines.append(
-                    f"<code>{i}. {item['title']} x{item['qty']} = ${subtotal_item:.2f}</code>"
+                    f"<code>{i}. {item['title']} x{item['qty']} = ${subtotal_item:.2f}</code>\n{image_url}"
                 )
+
             message_lines += [
                 "<code>=======================</code>",
                 f"<code>Subtotal: ${subtotal:.2f}</code>",
@@ -95,21 +98,21 @@ def checkout():
                 f"<code>Tax (10%): ${tax:.2f}</code>",
                 f"<code>💵 Total: ${total:.2f}</code>"
             ]
-            telegram_message = "\n".join(message_lines)
 
+            telegram_message = "\n".join(message_lines)
             requests.post(
                 f"https://api.telegram.org/bot{bot_token}/sendMessage",
                 data={"chat_id": chat_id, "text": telegram_message, "parse_mode": "HTML"}
             )
         except Exception as e:
-            print("Telegram send message error:", e)
+            print("Telegram summary error:", e)
 
-
+        # Send each product image as inline photo with caption
         try:
             for item in cart_list:
                 image_url = item.get('image', '')
-                caption = f"{item['title']} x{item['qty']} - ${float(item['price']) * float(item['qty']):.2f}"
                 if image_url:
+                    caption = f"{item['title']} x{item['qty']} - ${float(item['price']) * float(item['qty']):.2f}"
                     requests.post(
                         f"https://api.telegram.org/bot{bot_token}/sendPhoto",
                         data={
