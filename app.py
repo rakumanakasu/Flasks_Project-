@@ -2,7 +2,7 @@ import sys
 sys.path.append(r"D:\Dara\PythonAPI\exam")
 
 from flask import render_template, send_from_directory
-from config import app, mail, SHARED_PHOTO_FOLDER  # use the instances already created
+from config import app, mail, SHARED_PHOTO_FOLDER  
 from route import blueprints
 
 # ----------------------------
