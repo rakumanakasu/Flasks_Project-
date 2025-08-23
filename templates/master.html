@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}Home Page{% endblock %}</title>
   {% include "style.html" %}
-  <!-- FontAwesome for star icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 </head>
 
 <body>
@@ -34,7 +32,6 @@
 </body>
 
 {% include "script.html" %}
-
 <script>
 const { createApp, ref, computed, onMounted } = Vue;
 
@@ -58,7 +55,7 @@ createApp({
       cart_list.value.reduce((sum, item) => sum + item.price * item.qty, 0).toFixed(2)
     );
     const shipping = computed(() =>
-      cart_list.value.length > 0 ? 2.99 : 0
+      cart_list.value.length > 0 ? 5.99 : 0
     );
     const tax = computed(() =>
       (parseFloat(subtotal.value) * 0.1).toFixed(2)
@@ -74,32 +71,35 @@ createApp({
       )
     );
 
-    const addToCart = (item = product.value) => {
-      if (quantity.value < 1) {
-        alert('Quantity must be at least 1');
-        return;
-      }
-      if (!item.image || item.image.trim() === '') {
-        item.image = '/static/default.jpg';
-      }
+   const addToCart = (item = product.value) => {
+  if (quantity.value < 1) {
+    alert('Quantity must be at least 1');
+    return;
+  }
 
-      const existing = cart_list.value.find(p => p.id === item.id);
-      if (existing) {
-        existing.qty += quantity.value;
-      } else {
-        cart_list.value.push({ ...item, qty: quantity.value });
-      }
+  // Ensure the item has a valid image
+  if (!item.image || item.image.trim() === '') {
+    item.image = '/static/default.jpg'; // fallback image
+  }
 
-      localStorage.setItem('cart', JSON.stringify(cart_list.value));
+  const existing = cart_list.value.find(p => p.id === item.id);
+  if (existing) {
+    existing.qty += quantity.value;
+  } else {
+    cart_list.value.push({ ...item, qty: quantity.value });
+  }
 
-      Swal.fire({
-        icon: 'success',
-        title: 'Added to Cart',
-        text: `${item.title} x${quantity.value} added.`,
-        timer: 1200,
-        showConfirmButton: false
-      });
-    };
+  localStorage.setItem('cart', JSON.stringify(cart_list.value));
+
+  Swal.fire({
+    icon: 'success',
+    title: 'Added to Cart',
+    text: `${item.title} x${quantity.value} added.`,
+    timer: 1200,
+    showConfirmButton: false
+  });
+};
+
 
     const removeCartItem = (index) => {
       Swal.fire({
@@ -132,7 +132,6 @@ createApp({
 
     const showProductDetail = (p) => {
       selected_product.value = p;
-      selected_product.value.userRating = 0; // reset user rating
       $('#productModal').modal('show');
     };
 
@@ -155,61 +154,59 @@ createApp({
       const address = document.getElementById("address")?.value.trim();
       const cart = cart_list.value;
 
+      // Validate name minimum 4 characters
       if (!name || name.length < 4) {
-        Swal.fire({ icon: 'warning', title: 'Invalid Name', text: 'Name must be at least 4 characters.' });
-        return;
-      }
-      if (!email || !address) {
-        Swal.fire({ icon: 'warning', title: 'Missing Information', text: 'Please fill out all required fields.' });
-        return;
-      }
-      if (cart.length === 0) {
-        Swal.fire({ icon: 'warning', title: 'Empty Cart', text: 'Your cart is empty.' });
+        Swal.fire({
+          icon: 'warning',
+          title: 'Invalid Name',
+          text: 'Name must be at least 4 characters long.',
+        });
         return;
       }
 
-      Swal.fire({ title: 'Processing your order...', html: 'Please wait...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+      if (!email || !address) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Missing Information',
+          text: 'Please fill out all required fields (Email, Address).',
+        });
+        return;
+      }
+
+      if (cart.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Empty Cart',
+          text: 'Your cart is empty. Please add some products before checkout.',
+        });
+        return;
+      }
+
+      // Show loading popup while processing
+      Swal.fire({
+        title: 'Processing your order...',
+        html: 'Please wait while we send your invoice.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       setTimeout(() => {
         document.getElementById("cart_data").value = JSON.stringify(cart);
         document.getElementById("checkoutForm").submit();
       }, 1500);
     };
 
-    // ---------------- Rating --------------
-    const submitRating = (productId, rating) => {
-      fetch(`https://admindashboardflask-production-1a1e.up.railway.app/api/product/${productId}/rate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === "success") {
-          selected_product.value.rating_rate = data.rating_rate;
-          selected_product.value.rating_count = data.rating_count;
-          selected_product.value.userRating = rating;
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Thanks!',
-            text: `You rated this ${rating} star(s).`,
-            timer: 1200,
-            showConfirmButton: false
-          });
-        } else {
-          Swal.fire({ icon: 'error', title: 'Oops!', text: data.message });
-        }
-      })
-      .catch(err => {
-        console.error("Error submitting rating:", err);
-        Swal.fire({ icon: 'error', title: 'Network Error', text: 'Could not send rating.' });
-      });
-    };
-
     onMounted(() => {
+      console.log("Cart loaded:", cart_list.value);
+
       const form = document.getElementById('checkoutForm');
       if (form) {
-        form.addEventListener('submit', (e) => { e.preventDefault(); validateCheckout(); });
+        form.addEventListener('submit', (e) => {
+          e.preventDefault(); // prevent default submit
+          validateCheckout();
+        });
       }
     });
 
@@ -236,16 +233,20 @@ createApp({
       showCartModal,
       proceedToPurchase,
       checkout,
-      validateCheckout,
-      submitRating
+      validateCheckout
     };
   }
 }).mount('#productApp');
 </script>
 
+
 <script>
+
 if (document.cookie.includes('clear_cart=1')) {
   localStorage.removeItem('cart');
+  console.log("Cart cleared after successful order.");
+
+
   document.cookie = "clear_cart=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 </script>
